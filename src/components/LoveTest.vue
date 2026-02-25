@@ -262,20 +262,7 @@ function resetTest() {
   text-align: center;
 }
 
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #e0e0e0;
-  border-radius: 5px;
-  margin: 20px 0;
-  overflow: hidden;
-}
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #ff6b6b, #ffb6c1);
-  transition: width 0.3s ease;
-}
 
 .question-block {
   text-align: center;
@@ -384,7 +371,7 @@ function resetTest() {
   font-weight: bold;
 }
 
-/* Результат */
+
 .result-block {
   position: relative;
   min-height: 400px;

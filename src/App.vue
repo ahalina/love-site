@@ -30,64 +30,43 @@
     <p class="message-row">{{ message }}</p>
 
     <div class="button-group">
-      <button 
-        v-if="!showCounter" 
-        @click="showCounter = true"
-        class="button"
-      >
+      <button v-if="!showCounter" @click="showCounter = true" class="button">
         <i class="fas fa-calendar-alt"></i>
         Показать счетчик дней
       </button>
-      
-      <button 
-        @click="showLoveMessage"
-        class="button secondary"
-      >
+
+      <button @click="showLoveMessage" class="button secondary">
         <i class="fas fa-heart"></i>
         Показать сообщение
       </button>
-      
-      <button 
-        v-if="!showPhoto" 
-        @click="showPhoto = true"
-        class="button third"
-      >
+
+      <button v-if="!showPhoto" @click="showPhoto = true" class="button third">
         <i class="fas fa-camera"></i>
         Показать фото
       </button>
-      
-      <button 
-        v-if="!showTest" 
-        @click="showTest = true"
-        class="button fourth"
-      >
+
+      <button v-if="!showTest" @click="showTest = true" class="button fourth">
         <i class="fas fa-pencil"></i>
         Показать тест
       </button>
     </div>
 
-    <DayCounter 
-      v-if="showCounter"
-      :start-date="startDate"
-      :today="today"
-      @close="showCounter = false"
-    />
+    <button v-if="!showCalendar" @click="showCalendar = true" class="button fifth">
+      <i class="fas fa-calendar-alt"></i>
+      Наш календарь
+    </button>
+    
 
-    <LoveMessage 
-      v-if="showMessage"
-      :message="loveMessage"
-    />
+    <DayCounter v-if="showCounter" :start-date="startDate" :today="today" @close="showCounter = false" />
 
-    <PhotoGallery 
-      v-if="showPhoto"
-      :photos="photos"
-      @close="showPhoto = false"
-    />
+    <LoveMessage v-if="showMessage" :message="loveMessage" />
 
-    <LoveTest 
-      v-if="showTest"
-      @close="showTest = false"
-    />
+    <PhotoGallery v-if="showPhoto" :photos="photos" @close="showPhoto = false" />
+
+    <LoveTest v-if="showTest" @close="showTest = false" />
+
+    <PlanCalendar v-if="showCalendar" @close="showCalendar = false" />
+  
   </div>
 </template>
 
@@ -97,6 +76,8 @@ import DayCounter from './components/DayCounter.vue'
 import LoveMessage from './components/LoveMessage.vue'
 import PhotoGallery from './components/PhotoGallery.vue'
 import LoveTest from './components/LoveTest.vue'
+import PlanCalendar from './components/PlanCalendar.vue'
+
 
 const boyfriendName = ref('Никита')
 const message = ref('Ты мой самый любимый мальчик')
@@ -109,31 +90,33 @@ const showTest = ref(false)
 const startDate = ref(new Date(2025, 8, 3))
 const today = ref(new Date())
 
+const showCalendar = ref(false)
+
 const photos = ref([
-  { 
+  {
     thumb: new URL('./assets/photos/photo3.png', import.meta.url).href,
     full: new URL('./assets/photos/photo3.png', import.meta.url).href,
-    caption: 'Наше первое фото' 
+    caption: 'Наше первое фото'
   },
-  { 
+  {
     thumb: new URL('./assets/photos/photo1.png', import.meta.url).href,
     full: new URL('./assets/photos/photo1.png', import.meta.url).href,
-    caption: 'И мы счастливы' 
+    caption: 'И мы счастливы'
   },
-  { 
+  {
     thumb: new URL('./assets/photos/photo4.png', import.meta.url).href,
     full: new URL('./assets/photos/photo4.png', import.meta.url).href,
-    caption: 'Мой любимый' 
+    caption: 'Мой любимый'
   },
-  { 
+  {
     thumb: new URL('./assets/photos/photo2.png', import.meta.url).href,
     full: new URL('./assets/photos/photo2.png', import.meta.url).href,
-    caption: 'Наша прогулка' 
+    caption: 'Наша прогулка'
   },
-  { 
+  {
     thumb: new URL('./assets/photos/photo5.png', import.meta.url).href,
     full: new URL('./assets/photos/photo5.png', import.meta.url).href,
-    caption: 'Ты и я' 
+    caption: 'Ты и я'
   }
 ])
 
@@ -162,7 +145,7 @@ function showLoveMessage() {
   const randomIndex = Math.floor(Math.random() * loveMessages.length)
   loveMessage.value = loveMessages[randomIndex]
   showMessage.value = true
-  
+
 
   setTimeout(() => {
     showMessage.value = false
@@ -170,6 +153,4 @@ function showLoveMessage() {
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
