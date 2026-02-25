@@ -55,7 +55,7 @@
       <i class="fas fa-calendar-alt"></i>
       Наш календарь
     </button>
-    
+
 
     <DayCounter v-if="showCounter" :start-date="startDate" :today="today" @close="showCounter = false" />
 
@@ -66,7 +66,7 @@
     <LoveTest v-if="showTest" @close="showTest = false" />
 
     <PlanCalendar v-if="showCalendar" @close="showCalendar = false" />
-  
+
   </div>
 </template>
 

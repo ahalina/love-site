@@ -86,8 +86,8 @@ const isToday = (day) => {
 const selectedDay = ref(null)
 
 const selectDay = (day) => {
-  selectedDay.value = day
-  console.log('Выбран день:', day) 
+    selectedDay.value = day
+    console.log('Выбран день:', day)
 }
 
 

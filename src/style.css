@@ -104,6 +104,7 @@ button.third {
 button.third:hover {
   background: #45b7b7;
 }
+
 button.fourth {
   background: #53c753;
 }
@@ -308,12 +309,11 @@ button.fourth:hover {
     transform: translateY(100vh) rotate(360deg);
     opacity: 0;
   }
-
 }
 
 button.fifth {
   background: #ff9f4b;
-  
+
 }
 
 button.fifth:hover {
