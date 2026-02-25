@@ -28,10 +28,77 @@
 
 
         <div class="calendar-grid">
-
             <div v-for="n in emptyDays" :key="'empty-' + n" class="calendar-day empty"></div>
-            <div v-for="day in daysInMonth" :key="day" class="calendar-day" :class="{ 'today': isToday(day) }">
+            <div v-for="day in daysInMonth" :key="day" class="calendar-day" :class="{
+                'today': isToday(day),
+                'selected': selectedDay === day,
+                'has-plans': hasPlans(day)
+            }" @click="selectDay(day)">
                 <span class="day-number">{{ day }}</span>
+
+                <div class="plan-indicators">
+                    <span v-for="(plan, index) in getPlansForDay(day).slice(0, 3)" :key="index" class="plan-dot"
+                        :style="{ backgroundColor: plan.color || '#ff6b6b' }" :title="plan.text"></span>
+                    <span v-if="getPlansForDay(day).length > 3" class="more-dot">
+                        +{{ getPlansForDay(day).length - 3 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="selectedDay" class="plans-panel">
+            <div class="plans-header">
+                <h4>
+                    <i class="fas fa-calendar-check"></i>
+                    Планы на {{ selectedDay }} {{ currentMonthName }}
+                </h4>
+                <button @click="showAddForm = true" class="add-plan-btn">
+                    <i class="fas fa-plus"></i> Добавить план
+                </button>
+            </div>
+
+            <div v-if="showAddForm" class="add-plan-form">
+                <input v-model="newPlan.text" type="text" placeholder="Что планируем?" class="plan-input"
+                    @keyup.enter="addPlan">
+                <div class="plan-form-controls">
+                    <select v-model="newPlan.color" class="plan-color-select">
+                        <option value="#ff6b6b">❤️ Красный</option>
+                        <option value="#4ecdc4">💙 Бирюзовый</option>
+                        <option value="#ffb6c1">💗 Розовый</option>
+                        <option value="#764ba2">💜 Фиолетовый</option>
+                        <option value="#4caf50">💚 Зеленый</option>
+                        <option value="#ff9f4b">🧡 Оранжевый</option>
+                    </select>
+                    <button @click="addPlan" class="save-plan-btn">
+                        <i class="fas fa-save"></i> {{ editingPlanIndex !== null ? 'Сохранить' : 'Добавить' }}
+                    </button>
+                    <button @click="cancelEdit" class="cancel-plan-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+
+            <div class="plans-list">
+                <div v-for="(plan, index) in getPlansForDay(selectedDay)" :key="index" class="plan-item"
+                    :style="{ borderLeftColor: plan.color }">
+                    <div class="plan-content">
+                        <span class="plan-text">{{ plan.text }}</span>
+                    </div>
+                    <div class="plan-actions">
+                        <button @click="editPlan(index)" class="edit-plan-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button @click="deletePlan(index)" class="delete-plan-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+
+                <p v-if="getPlansForDay(selectedDay).length === 0" class="no-plans">
+                    ✨ Пока нет планов на этот день
+                </p>
             </div>
         </div>
 
@@ -91,9 +158,425 @@ const selectDay = (day) => {
 }
 
 
+
+const plans = ref({})
+
+const loadPlans = () => {
+    const saved = localStorage.getItem('plans')
+    if (saved) {
+        plans.value = JSON.parse(saved)
+    }
+}
+
+
+const savePlans = () => {
+    localStorage.setItem('plans', JSON.stringify(plans.value))
+}
+
+const addTestPlans = () => {
+
+    if (Object.keys(plans.value).length > 0) return
+
+    plans.value = {
+        [`${currentYear.value}-${currentMonth.value + 1}-15`]: [
+            { text: '🍕 Свидание', color: '#ff6b6b' },
+            { text: '🎬 Кино', color: '#4ecdc4' }
+        ],
+        [`${currentYear.value}-${currentMonth.value + 1}-20`]: [
+            { text: '🎂 День рождения', color: '#ffb6c1' }
+        ],
+        [`${currentYear.value}-${currentMonth.value + 1}-25`]: [
+            { text: '🛒 За продуктами', color: '#ff9f4b' },
+            { text: '📞 Позвонить маме', color: '#764ba2' },
+            { text: '💻 Работа над проектом', color: '#45b7b7' }
+        ]
+    }
+    savePlans()
+}
+
+loadPlans()
+addTestPlans()
+
+const getDateKey = (day) => {
+    return `${currentYear.value}-${currentMonth.value + 1}-${day}`
+}
+
+const getPlansForDay = (day) => {
+    const key = getDateKey(day)
+    return plans.value[key] || []
+}
+
+
+const hasPlans = (day) => {
+    return getPlansForDay(day).length > 0
+}
+
+
+// добавление плпна и открытие окна
+
+
+
+const showAddForm = ref(false)
+const editingPlanIndex = ref(null)
+
+
+const newPlan = ref({
+    text: '',
+    color: '#ff6b6b'
+})
+
+
+const addPlan = () => {
+    if (!newPlan.value.text.trim() || !selectedDay.value) return
+
+    const key = getDateKey(selectedDay.value)
+
+    if (!plans.value[key]) {
+        plans.value[key] = []
+    }
+
+    if (editingPlanIndex.value !== null) {
+        plans.value[key][editingPlanIndex.value] = { ...newPlan.value }
+        editingPlanIndex.value = null
+    } else {
+        plans.value[key].push({ ...newPlan.value })
+    }
+
+
+    newPlan.value = { text: '', color: '#ff6b6b' }
+    showAddForm.value = false
+
+    savePlans()
+}
+
+
+const editPlan = (index) => {
+    const key = getDateKey(selectedDay.value)
+    const plan = plans.value[key][index]
+    newPlan.value = { ...plan }
+    editingPlanIndex.value = index
+    showAddForm.value = true
+}
+
+
+const deletePlan = (index) => {
+    if (!confirm('Удалить этот план?')) return
+
+    const key = getDateKey(selectedDay.value)
+    plans.value[key].splice(index, 1)
+
+
+    if (plans.value[key].length === 0) {
+        delete plans.value[key]
+    }
+
+    savePlans()
+}
+
+
+const cancelEdit = () => {
+    newPlan.value = { text: '', color: '#ff6b6b' }
+    editingPlanIndex.value = null
+    showAddForm.value = false
+}
+
 </script>
 
 <style scoped>
+.plans-panel {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 2px solid #ffb6c1;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.plans-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.plans-header h4 {
+    color: #764ba2;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+.add-plan-btn {
+    background: #4ecdc4;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+}
+
+.add-plan-btn:hover {
+    background: #45b7b7;
+    transform: scale(1.05);
+}
+
+.add-plan-form {
+    background: #f8f0ff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    animation: slideDown 0.3s;
+}
+
+.plan-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1em;
+    margin-bottom: 10px;
+    transition: border-color 0.3s;
+}
+
+.plan-input:focus {
+    outline: none;
+    border-color: #764ba2;
+}
+
+.plan-form-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.plan-color-select {
+    padding: 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    flex: 1;
+    min-width: 120px;
+}
+
+.save-plan-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.save-plan-btn:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+.cancel-plan-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cancel-plan-btn:hover {
+    background: #ff5252;
+    transform: scale(1.05);
+}
+
+.plans-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+
+.plan-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f8f0ff;
+    border-radius: 10px;
+    border-left: 4px solid #ff6b6b;
+    animation: slideIn 0.3s;
+    transition: transform 0.2s;
+}
+
+.plan-item:hover {
+    transform: translateX(5px);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.plan-content {
+    flex: 1;
+}
+
+.plan-text {
+    color: #2c3e50;
+    font-size: 1em;
+}
+
+/* Кнопки действий */
+.plan-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.edit-plan-btn,
+.delete-plan-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.edit-plan-btn {
+    background: #764ba2;
+}
+
+.edit-plan-btn:hover {
+    background: #8a5fc0;
+    transform: scale(1.1);
+}
+
+.delete-plan-btn {
+    background: #ff6b6b;
+}
+
+.delete-plan-btn:hover {
+    background: #ff5252;
+    transform: scale(1.1);
+}
+
+
+.no-plans {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+.plans-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.plans-list::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 10px;
+}
+
+.plans-list::-webkit-scrollbar-thumb {
+    background: #ff6b6b;
+    border-radius: 10px;
+}
+
+.plans-list::-webkit-scrollbar-thumb:hover {
+    background: #ff5252;
+}
+
+
+
+
+.calendar-day.has-plans {
+    background: #f8f0ff;
+    font-weight: bold;
+}
+
+
+.plan-indicators {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+
+.plan-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.plan-dot:hover {
+    transform: scale(1.5);
+}
+
+.more-dot {
+    font-size: 0.7em;
+    color: #666;
+    background: #e0e0e0;
+    border-radius: 10px;
+    padding: 0 4px;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.calendar-day.selected .plan-dot {
+    transform: scale(1.1);
+}
+
 .calendar-container {
     background: linear-gradient(135deg, #fff9f9, #fff0f5);
     border-radius: 20px;
