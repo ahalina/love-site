@@ -3,11 +3,25 @@
         <button @click="$emit('close')" class="close-button">
             <i class="fas fa-times"></i>
         </button>
+
         <h3 class="calendar-title">
             <i class="fas fa-calendar-alt"></i>
             Наш календарь планов
             <i class="fas fa-calendar-alt"></i>
         </h3>
+
+        <!-- Индикатор загрузки -->
+        <div v-if="isLoading" class="loading">
+            <i class="fas fa-spinner fa-spin"></i> Загрузка планов...
+        </div>
+
+        <!-- Индикатор синхронизации -->
+        <div v-if="syncStatus" class="sync-status" :class="{ error: syncStatus.includes('❌') }">
+            <i :class="syncStatus.includes('✅') ? 'fas fa-check-circle' :
+                syncStatus.includes('❌') ? 'fas fa-exclamation-circle' :
+                    'fas fa-sync-alt fa-spin'"></i>
+            {{ syncStatus }}
+        </div>
 
         <div class="calendar-header">
             <button @click="prevMonth" class="month-nav">
@@ -17,8 +31,8 @@
             <button @click="nextMonth" class="month-nav">
                 <i class="fas fa-chevron-right"></i>
             </button>
-
         </div>
+
 
         <div class="weekdays">
             <div v-for="day in weekdays" :key="day" class="weekday">
@@ -29,6 +43,7 @@
 
         <div class="calendar-grid">
             <div v-for="n in emptyDays" :key="'empty-' + n" class="calendar-day empty"></div>
+
             <div v-for="day in daysInMonth" :key="day" class="calendar-day" :class="{
                 'today': isToday(day),
                 'selected': selectedDay === day,
@@ -57,6 +72,7 @@
                 </button>
             </div>
 
+
             <div v-if="showAddForm" class="add-plan-form">
                 <input v-model="newPlan.text" type="text" placeholder="Что планируем?" class="plan-input"
                     @keyup.enter="addPlan">
@@ -78,7 +94,6 @@
                 </div>
             </div>
 
-
             <div class="plans-list">
                 <div v-for="(plan, index) in getPlansForDay(selectedDay)" :key="index" class="plan-item"
                     :style="{ borderLeftColor: plan.color }">
@@ -95,23 +110,22 @@
                     </div>
                 </div>
 
-
                 <p v-if="getPlansForDay(selectedDay).length === 0" class="no-plans">
                     ✨ Пока нет планов на этот день
                 </p>
             </div>
         </div>
-
     </div>
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { subscribeToPlans, savePlansToCloud } from '../firebase'
 
-import { ref, computed } from 'vue'
+const emit = defineEmits(['close'])
 
 
 const currentDate = ref(new Date())
-
 
 const currentYear = computed(() => currentDate.value.getFullYear())
 const currentMonth = computed(() => currentDate.value.getMonth())
@@ -119,28 +133,16 @@ const currentMonthName = computed(() => {
     return new Date(currentYear.value, currentMonth.value).toLocaleString('ru', { month: 'long' })
 })
 
-
 const daysInMonth = computed(() => {
-
     return new Date(currentYear.value, currentMonth.value + 1, 0).getDate()
 })
 
-
 const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-const prevMonth = () => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1)
-}
-
-
-const nextMonth = () => {
-    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1)
-}
 const emptyDays = computed(() => {
     const firstDay = new Date(currentYear.value, currentMonth.value, 1).getDay()
     return firstDay === 0 ? 6 : firstDay - 1
 })
-
 
 const isToday = (day) => {
     const today = new Date()
@@ -149,53 +151,67 @@ const isToday = (day) => {
         currentYear.value === today.getFullYear()
 }
 
+const prevMonth = () => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value - 1, 1)
+}
+
+const nextMonth = () => {
+    currentDate.value = new Date(currentYear.value, currentMonth.value + 1, 1)
+}
+
 
 const selectedDay = ref(null)
 
 const selectDay = (day) => {
     selectedDay.value = day
-    console.log('Выбран день:', day)
 }
-
 
 
 const plans = ref({})
+const isLoading = ref(true)
+const syncStatus = ref('')
+let unsubscribe = null
 
-const loadPlans = () => {
-    const saved = localStorage.getItem('plans')
-    if (saved) {
-        plans.value = JSON.parse(saved)
+// Подписка на Firebase
+onMounted(() => {
+    isLoading.value = true
+    syncStatus.value = '🔄 Загрузка планов...'
+
+    unsubscribe = subscribeToPlans((data) => {
+        plans.value = data
+        isLoading.value = false
+        syncStatus.value = '✅ Синхронизировано'
+
+        setTimeout(() => {
+            syncStatus.value = ''
+        }, 3000)
+    })
+})
+
+// Отписка
+onUnmounted(() => {
+    if (unsubscribe) {
+        unsubscribe()
     }
-}
+})
 
-
-const savePlans = () => {
-    localStorage.setItem('plans', JSON.stringify(plans.value))
-}
-
-const addTestPlans = () => {
-
-    if (Object.keys(plans.value).length > 0) return
-
-    plans.value = {
-        [`${currentYear.value}-${currentMonth.value + 1}-15`]: [
-            { text: '🍕 Свидание', color: '#ff6b6b' },
-            { text: '🎬 Кино', color: '#4ecdc4' }
-        ],
-        [`${currentYear.value}-${currentMonth.value + 1}-20`]: [
-            { text: '🎂 День рождения', color: '#ffb6c1' }
-        ],
-        [`${currentYear.value}-${currentMonth.value + 1}-25`]: [
-            { text: '🛒 За продуктами', color: '#ff9f4b' },
-            { text: '📞 Позвонить маме', color: '#764ba2' },
-            { text: '💻 Работа над проектом', color: '#45b7b7' }
-        ]
+// Автосохранение в Firebase
+watch(plans, (newPlans) => {
+    if (!isLoading.value) {
+        syncStatus.value = '🔄 Сохранение...'
+        savePlansToCloud(newPlans).then((success) => {
+            if (success) {
+                syncStatus.value = '✅ Сохранено'
+            } else {
+                syncStatus.value = '❌ Ошибка сохранения'
+            }
+            setTimeout(() => {
+                syncStatus.value = ''
+            }, 3000)
+        })
     }
-    savePlans()
-}
+}, { deep: true })
 
-loadPlans()
-addTestPlans()
 
 const getDateKey = (day) => {
     return `${currentYear.value}-${currentMonth.value + 1}-${day}`
@@ -206,25 +222,18 @@ const getPlansForDay = (day) => {
     return plans.value[key] || []
 }
 
-
 const hasPlans = (day) => {
     return getPlansForDay(day).length > 0
 }
 
 
-// добавление плпна и открытие окна
-
-
-
 const showAddForm = ref(false)
 const editingPlanIndex = ref(null)
-
 
 const newPlan = ref({
     text: '',
     color: '#ff6b6b'
 })
-
 
 const addPlan = () => {
     if (!newPlan.value.text.trim() || !selectedDay.value) return
@@ -236,19 +245,18 @@ const addPlan = () => {
     }
 
     if (editingPlanIndex.value !== null) {
+
         plans.value[key][editingPlanIndex.value] = { ...newPlan.value }
         editingPlanIndex.value = null
     } else {
+
         plans.value[key].push({ ...newPlan.value })
     }
 
 
     newPlan.value = { text: '', color: '#ff6b6b' }
     showAddForm.value = false
-
-    savePlans()
 }
-
 
 const editPlan = (index) => {
     const key = getDateKey(selectedDay.value)
@@ -258,31 +266,63 @@ const editPlan = (index) => {
     showAddForm.value = true
 }
 
-
 const deletePlan = (index) => {
     if (!confirm('Удалить этот план?')) return
 
     const key = getDateKey(selectedDay.value)
     plans.value[key].splice(index, 1)
 
-
     if (plans.value[key].length === 0) {
         delete plans.value[key]
     }
-
-    savePlans()
 }
-
 
 const cancelEdit = () => {
     newPlan.value = { text: '', color: '#ff6b6b' }
     editingPlanIndex.value = null
     showAddForm.value = false
 }
-
 </script>
 
+
+
 <style scoped>
+.loading {
+    text-align: center;
+    padding: 10px;
+    color: #764ba2;
+    font-size: 0.95em;
+}
+
+.sync-status {
+    margin: 10px 0;
+    padding: 8px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.sync-status.error {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.fa-spin {
+    animation: fa-spin 2s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .plans-panel {
     background: white;
     border-radius: 15px;

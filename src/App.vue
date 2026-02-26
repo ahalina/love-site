@@ -151,6 +151,9 @@ function showLoveMessage() {
     showMessage.value = false
   }, 3000)
 }
+
+
+
 </script>
 
 <style scoped></style>
