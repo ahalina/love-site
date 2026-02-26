@@ -752,4 +752,168 @@ const cancelEdit = () => {
     border-color: #ff6b6b;
     font-weight: bold;
 }
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
+
+/* Для маленьких экранов (телефоны) */
+@media screen and (max-width: 480px) {
+  .calendar-container {
+    padding: 15px 10px;  /* Уменьшаем отступы */
+  }
+
+  .calendar-title {
+    font-size: 1.1em;  /* Уменьшаем заголовок */
+    margin-bottom: 15px;
+  }
+
+  .month-year {
+    font-size: 1em;  /* Уменьшаем название месяца */
+  }
+
+  .month-nav {
+    width: 30px;  /* Уменьшаем кнопки навигации */
+    height: 30px;
+    font-size: 0.9em;
+  }
+
+  .weekday {
+    padding: 5px;  /* Уменьшаем дни недели */
+    font-size: 0.8em;
+  }
+
+  .calendar-grid {
+    gap: 3px;  /* Уменьшаем расстояние между ячейками */
+  }
+
+  .calendar-day {
+    padding: 2px;  /* Уменьшаем внутренние отступы */
+  }
+
+  .day-number {
+    font-size: 0.9em;  /* Уменьшаем числа */
+  }
+
+  .plan-dot {
+    width: 6px;  /* Уменьшаем точки */
+    height: 6px;
+  }
+
+  .more-dot {
+    font-size: 0.6em;
+    min-width: 15px;
+    height: 15px;
+  }
+
+  /* Панель с планами */
+  .plans-panel {
+    padding: 15px;
+  }
+
+  .plans-header h4 {
+    font-size: 0.95em;
+  }
+
+  .add-plan-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+
+  .plan-item {
+    padding: 8px;
+  }
+
+  .plan-text {
+    font-size: 0.9em;
+  }
+
+  .edit-plan-btn, .delete-plan-btn {
+    width: 25px;
+    height: 25px;
+    font-size: 0.8em;
+  }
+
+  /* Форма добавления */
+  .add-plan-form {
+    padding: 12px;
+  }
+
+  .plan-input {
+    padding: 8px;
+    font-size: 0.9em;
+  }
+
+  .plan-color-select {
+    padding: 6px;
+    font-size: 0.85em;
+    min-width: 100px;
+  }
+
+  .save-plan-btn {
+    padding: 6px 12px;
+    font-size: 0.85em;
+  }
+
+  .cancel-plan-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* Индикаторы */
+  .loading, .sync-status {
+    font-size: 0.85em;
+    padding: 6px;
+  }
+}
+
+/* Для средних экранов (планшеты) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+  .calendar-container {
+    padding: 20px 15px;
+  }
+
+  .calendar-grid {
+    gap: 4px;
+  }
+
+  .day-number {
+    font-size: 1em;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media screen and (max-width: 360px) {
+  .calendar-day {
+    aspect-ratio: auto;  /* Убираем квадратность */
+    min-height: 35px;     /* Задаем минимальную высоту */
+  }
+
+  .plan-indicators {
+    margin-top: 2px;
+  }
+
+  .plan-dot {
+    width: 5px;
+    height: 5px;
+  }
+}
+
+/* Горизонтальная ориентация на телефоне */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .calendar-container {
+    padding: 10px;
+  }
+
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .calendar-day {
+    aspect-ratio: auto;
+    min-height: 30px;
+  }
+
+  .plans-list {
+    max-height: 150px;  /* Уменьшаем высоту списка */
+  }
+}
 </style>
