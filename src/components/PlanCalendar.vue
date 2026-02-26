@@ -752,49 +752,46 @@ const cancelEdit = () => {
     border-color: #ff6b6b;
     font-weight: bold;
 }
-
-/* ===== АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ ===== */
-
-/* Для маленьких экранов (телефоны) */
+/*
 @media screen and (max-width: 480px) {
   .calendar-container {
-    padding: 15px 10px;  /* Уменьшаем отступы */
+    padding: 15px 10px;  
   }
 
   .calendar-title {
-    font-size: 1.1em;  /* Уменьшаем заголовок */
+    font-size: 1.1em;  
     margin-bottom: 15px;
   }
 
   .month-year {
-    font-size: 1em;  /* Уменьшаем название месяца */
+    font-size: 1em;  
   }
 
   .month-nav {
-    width: 30px;  /* Уменьшаем кнопки навигации */
+    width: 30px;  
     height: 30px;
     font-size: 0.9em;
   }
 
   .weekday {
-    padding: 5px;  /* Уменьшаем дни недели */
+    padding: 5px; 
     font-size: 0.8em;
   }
 
   .calendar-grid {
-    gap: 3px;  /* Уменьшаем расстояние между ячейками */
+    gap: 3px;  
   }
 
   .calendar-day {
-    padding: 2px;  /* Уменьшаем внутренние отступы */
+    padding: 2px; 
   }
 
   .day-number {
-    font-size: 0.9em;  /* Уменьшаем числа */
+    font-size: 0.9em;  
   }
 
   .plan-dot {
-    width: 6px;  /* Уменьшаем точки */
+    width: 6px;  
     height: 6px;
   }
 
@@ -804,7 +801,7 @@ const cancelEdit = () => {
     height: 15px;
   }
 
-  /* Панель с планами */
+  
   .plans-panel {
     padding: 15px;
   }
@@ -832,7 +829,7 @@ const cancelEdit = () => {
     font-size: 0.8em;
   }
 
-  /* Форма добавления */
+
   .add-plan-form {
     padding: 12px;
   }
@@ -858,14 +855,13 @@ const cancelEdit = () => {
     height: 30px;
   }
 
-  /* Индикаторы */
   .loading, .sync-status {
     font-size: 0.85em;
     padding: 6px;
   }
 }
 
-/* Для средних экранов (планшеты) */
+
 @media screen and (min-width: 481px) and (max-width: 768px) {
   .calendar-container {
     padding: 20px 15px;
@@ -880,11 +876,10 @@ const cancelEdit = () => {
   }
 }
 
-/* Для очень маленьких экранов */
 @media screen and (max-width: 360px) {
   .calendar-day {
-    aspect-ratio: auto;  /* Убираем квадратность */
-    min-height: 35px;     /* Задаем минимальную высоту */
+    aspect-ratio: auto;  
+    min-height: 35px;     
   }
 
   .plan-indicators {
@@ -897,7 +892,7 @@ const cancelEdit = () => {
   }
 }
 
-/* Горизонтальная ориентация на телефоне */
+
 @media screen and (max-height: 500px) and (orientation: landscape) {
   .calendar-container {
     padding: 10px;
@@ -913,7 +908,8 @@ const cancelEdit = () => {
   }
 
   .plans-list {
-    max-height: 150px;  /* Уменьшаем высоту списка */
+    max-height: 150px;  
   }
 }
-</style>
+*/
+</style> 
