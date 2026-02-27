@@ -752,7 +752,7 @@ const cancelEdit = () => {
     border-color: #ff6b6b;
     font-weight: bold;
 }
-/*
+
 @media screen and (max-width: 480px) {
   .calendar-container {
     padding: 15px 10px;  
@@ -911,5 +911,5 @@ const cancelEdit = () => {
     max-height: 150px;  
   }
 }
-*/
+
 </style> 
